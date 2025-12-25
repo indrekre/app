@@ -6,12 +6,13 @@ import requests
 st.set_page_config(page_title="Deprecia - Smart Financing", page_icon="🚗")
 st.title("🚗 Deprecia – Smart Car Financing & Depreciation")
 
-# Front Page Sample Test Section
-st.markdown("### Quick Sample Test: 2023 Porsche Taycan Base (High Depreciation EV Example)")
+# Front Page Sample Test Section – Porsche Taycan 2023 Used with 30,000 km
+st.markdown("### Quick Sample Test: Used 2023 Porsche Taycan Base (30,000 km)")
 st.markdown("""
-**Scenario**: Dealer asks €72,000 for a used 2023 Taycan base. Market value ~€65,000-75,000 (average €70,000).  
-Expected resale in 2-3 years: €55,000-60,000.  
-This is a classic high-depreciation luxury EV – load the example and see why leasing is often wiser!
+**Scenario**: Dealer sells a used 2023 Taycan base with 30,000 km for **€72,000**.  
+Market value on portals: **€65,000 - €75,000** (average €70,000).  
+Dealer buyback/resale estimate: **€55,000 - €60,000**.  
+Load this example to see why this can hit hard – high depreciation luxury EV!
 """)
 
 col1, col2, col3 = st.columns(3)
@@ -22,8 +23,8 @@ with col2:
 with col3:
     st.image("https://www.porsche.com/media/image/2023-taycan-interior-dashboard.jpg", caption="Taycan Interior")
 
-if st.button("Load Porsche Taycan 2023 Sample Test"):
-    st.session_state.vin = "WP0AA2Y1XPSA12345"
+if st.button("Load Used 2023 Porsche Taycan (30,000 km) Sample"):
+    st.session_state.vin = "WP0AA2Y1XPSA12345"  # Sample VIN
     st.session_state.vehicle_type = "Used (2+ years old)"
     st.session_state.make = "Porsche"
     st.session_state.model = "Taycan"
@@ -31,7 +32,7 @@ if st.button("Load Porsche Taycan 2023 Sample Test"):
     st.session_state.purchase_price = 72000
     st.session_state.fair_market_value = 70000
     st.session_state.annual_miles = 10000
-    st.success("Porsche Taycan sample loaded! Scroll to sidebar and click Calculate.")
+    st.success("Used Taycan sample loaded! Scroll to sidebar and click Calculate to see the impact.")
 
 BASE_URL = "https://vpic.nhtsa.dot.gov/api/vehicles"
 
@@ -69,7 +70,7 @@ def get_models(make):
     except:
         return []
 
-# Sidebar inputs with SAFE session_state handling
+# Sidebar inputs with safe session_state
 vin = st.sidebar.text_input("Enter VIN (17 chars)", value=st.session_state.get('vin', ''))
 
 vehicle_type = st.sidebar.selectbox("New or Used?", ["New", "Used (2+ years old)"],
@@ -94,7 +95,8 @@ purchase_price = st.sidebar.number_input("Purchase Price (€)", min_value=5000,
                                          value=int(st.session_state.get('purchase_price', 45000)), step=1000)
 
 fair_market_value = st.sidebar.number_input("Estimated Fair Market Value (€)", min_value=0,
-                                             value=int(st.session_state.get('fair_market_value', purchase_price)), step=1000)
+                                             value=int(st.session_state.get('fair_market_value', purchase_price)), step=1000,
+                                             help="Average from portals like AutoScout24, Mobile.de")
 
 annual_miles = st.sidebar.number_input("Annual Miles / km", value=int(st.session_state.get('annual_miles', 12000)), step=1000)
 
@@ -106,13 +108,14 @@ if st.sidebar.button("Calculate"):
     else:
         st.success(f"### {year} {make} {model}")
 
-        # Depreciation rates
-        if vehicle_type == "Used (2+ years old)":
-            rates = [0.10, 0.12, 0.12, 0.11, 0.10]
-            st.info("Used car: Lower depreciation rates applied")
+        # Depreciation rates – slightly higher for luxury/EV used
+        if "Taycan" in model or "Tesla" in make:
+            st.warning("Luxury EV detected – higher depreciation rates applied")
+            base_rates = [0.20, 0.18, 0.16, 0.15, 0.14] if vehicle_type == "Used (2+ years old)" else [0.30, 0.20, 0.18, 0.16, 0.15]
         else:
-            rates = [0.25, 0.18, 0.16, 0.14, 0.12]
+            base_rates = [0.10, 0.12, 0.12, 0.11, 0.10] if vehicle_type == "Used (2+ years old)" else [0.25, 0.18, 0.16, 0.14, 0.12]
 
+        rates = base_rates
         if annual_miles > 15000:
             rates = [r + 0.03 for r in rates]
             st.warning("High mileage adds ~3% extra dep/year")
@@ -134,16 +137,17 @@ if st.sidebar.button("Calculate"):
         ax.plot(df["Year"], df["Value (€)"], marker="o", color="#e74c3c", linewidth=4)
         ax.axhline(y=purchase_price * 0.5, color="orange", linestyle="--", label="50% of Purchase")
         ax.fill_between(df["Year"], df["Value (€)"], purchase_price, alpha=0.2, color="#e74c3c")
-        ax.set_title("Depreciation Impact")
+        ax.set_title("Depreciation Impact – Luxury EV Drop")
         ax.set_ylabel("Value (€)")
         ax.grid(True, alpha=0.3)
         ax.legend()
+        crippled
         ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"€{x:,.0f}"))
         st.pyplot(fig)
 
         price_diff = purchase_price - fair_market_value
         if price_diff > 500:
-            st.error(f"Paying €{price_diff:,.0f} ABOVE market – hits resale hard!")
+            st.error(f"Paying €{price_diff:,.0f} ABOVE market – will hit resale hard!")
         elif price_diff < -500:
             st.success(f"Bargain! €{-price_diff:,.0f} BELOW market")
         else:
@@ -156,7 +160,7 @@ if st.sidebar.button("Calculate"):
         elif remaining_pct > 40:
             st.warning(f"🟡 Caution – ~{remaining_pct:.0f}% remaining")
         else:
-            st.error(f"🔴 High Risk – only ~{remaining_pct:.0f}% remaining")
+            st.error(f"🔴 High Risk – only ~{remaining_pct:.0f}% remaining – lease recommended for luxury EVs!")
 
         monthly = None
 
@@ -216,6 +220,8 @@ if st.sidebar.button("Calculate"):
             - Lease luxury/high-dep cars (like Taycan)
             - Larger down payment
             """)
+            if "Taycan" in model:
+                st.warning("For Porsche Taycan: Lease is often wiser due to fast depreciation and tech changes.")
 
 st.markdown("---")
-st.markdown("Deprecia – Final Fixed with Safe Session State & Porsche Sample")
+st.markdown("Deprecia – Updated for Used Porsche Taycan 2023 Scenario with 30,000 km")

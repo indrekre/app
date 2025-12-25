@@ -6,7 +6,7 @@ import requests
 st.set_page_config(page_title="Deprecia - Smart Financing", page_icon="🚗")
 st.title("🚗 Deprecia – Smart Car Financing & Depreciation")
 
-# Front Page Sample Test Section – Porsche Taycan 2023 Used with 30,000 km
+# Front Page Sample Test Section – Used 2023 Porsche Taycan with 30,000 km
 st.markdown("### Quick Sample Test: Used 2023 Porsche Taycan Base (30,000 km)")
 st.markdown("""
 **Scenario**: Dealer sells a used 2023 Taycan base with 30,000 km for **€72,000**.  
@@ -108,7 +108,7 @@ if st.sidebar.button("Calculate"):
     else:
         st.success(f"### {year} {make} {model}")
 
-        # Depreciation rates – slightly higher for luxury/EV used
+        # Depreciation rates – higher for luxury/EV
         if "Taycan" in model or "Tesla" in make:
             st.warning("Luxury EV detected – higher depreciation rates applied")
             base_rates = [0.20, 0.18, 0.16, 0.15, 0.14] if vehicle_type == "Used (2+ years old)" else [0.30, 0.20, 0.18, 0.16, 0.15]
@@ -137,11 +137,10 @@ if st.sidebar.button("Calculate"):
         ax.plot(df["Year"], df["Value (€)"], marker="o", color="#e74c3c", linewidth=4)
         ax.axhline(y=purchase_price * 0.5, color="orange", linestyle="--", label="50% of Purchase")
         ax.fill_between(df["Year"], df["Value (€)"], purchase_price, alpha=0.2, color="#e74c3c")
-        ax.set_title("Depreciation Impact – Luxury EV Drop")
+        ax.set_title("Depreciation Impact")
         ax.set_ylabel("Value (€)")
         ax.grid(True, alpha=0.3)
         ax.legend()
-        crippled
         ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"€{x:,.0f}"))
         st.pyplot(fig)
 
@@ -224,4 +223,4 @@ if st.sidebar.button("Calculate"):
                 st.warning("For Porsche Taycan: Lease is often wiser due to fast depreciation and tech changes.")
 
 st.markdown("---")
-st.markdown("Deprecia – Updated for Used Porsche Taycan 2023 Scenario with 30,000 km")
+st.markdown("Deprecia – Cleaned & Fixed (removed 'crippled' typo)")

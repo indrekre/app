@@ -18,13 +18,12 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.image("https://media.ed.edmunds-media.com/porsche/taycan/2023/oem/2023_porsche_taycan_sedan_base_fq_oem_1_1600.jpg", caption="2023 Porsche Taycan Base")
 with col2:
-    st.image("https://www.porsche.com/media/image/2023-taycan-turbo-s-cross-turismo.jpg", caption="Taycan Side View")
+    st.image("https://di-uploads-pod8.dealerinspire.com/porscheoftacoma/uploads/2023/04/2023-Porsche-Taycan-side-view.jpg", caption="Taycan Side View")
 with col3:
-    st.image("https://www.porsche.com/media/image/2023-taycan-interior.jpg", caption="Taycan Interior")
+    st.image("https://www.porsche.com/media/image/2023-taycan-interior-dashboard.jpg", caption="Taycan Interior")
 
 if st.button("Load Porsche Taycan 2023 Sample Test"):
-    st.session_state.sample_loaded = True
-    st.session_state.vin = "WP0AA2Y1XPSA12345"  # Sample VIN (decodes to Taycan)
+    st.session_state.vin = "WP0AA2Y1XPSA12345"
     st.session_state.vehicle_type = "Used (2+ years old)"
     st.session_state.make = "Porsche"
     st.session_state.model = "Taycan"
@@ -70,40 +69,36 @@ def get_models(make):
     except:
         return []
 
-# Sidebar inputs with session_state defaults
-vin = st.sidebar.text_input("Enter VIN (17 chars)", value=st.session_state.get('vin', ''), help="Optional – auto-fills details")
+# Sidebar inputs with SAFE session_state handling
+vin = st.sidebar.text_input("Enter VIN (17 chars)", value=st.session_state.get('vin', ''))
 
 vehicle_type = st.sidebar.selectbox("New or Used?", ["New", "Used (2+ years old)"],
-                                    index=["New", "Used (2+ years old)"].index(st.session_state.get('vehicle_type', "New")) if 'vehicle_type' in st.session_state else 0)
+                                    index=0 if st.session_state.get('vehicle_type', "New") == "New" else 1)
 
-# Make with safe index
 makes_list = [""] + get_makes()
 default_make = st.session_state.get('make', "")
 make_index = makes_list.index(default_make) if default_make in makes_list else 0
 make = st.sidebar.selectbox("Make", makes_list, index=make_index)
 
-# Model
-models = get_models(make)
+models_list = [""] + get_models(make)
 default_model = st.session_state.get('model', "")
-model_index = models.index(default_model) if default_model in models else 0
-model = st.sidebar.selectbox("Model", [""] + models, index=model_index + 1 if model_index > -1 else 0)
+model_index = models_list.index(default_model) if default_model in models_list else 0
+model = st.sidebar.selectbox("Model", models_list, index=model_index)
 
-# Year
-default_year = st.session_state.get('year', "")
 year_options = [""] + [str(y) for y in range(2025, 2009, -1)]
+default_year = st.session_state.get('year', "")
 year_index = year_options.index(default_year) if default_year in year_options else 0
 year = st.sidebar.selectbox("Year", year_options, index=year_index)
 
 purchase_price = st.sidebar.number_input("Purchase Price (€)", min_value=5000, max_value=500000,
-                                         value=st.session_state.get('purchase_price', 45000), step=1000)
+                                         value=int(st.session_state.get('purchase_price', 45000)), step=1000)
 
 fair_market_value = st.sidebar.number_input("Estimated Fair Market Value (€)", min_value=0,
-                                             value=st.session_state.get('fair_market_value', purchase_price), step=1000,
-                                             help="From AutoScout24, Mobile.de, etc.")
+                                             value=int(st.session_state.get('fair_market_value', purchase_price)), step=1000)
 
-annual_miles = st.sidebar.number_input("Annual Miles / km", value=st.session_state.get('annual_miles', 12000), step=1000)
+annual_miles = st.sidebar.number_input("Annual Miles / km", value=int(st.session_state.get('annual_miles', 12000)), step=1000)
 
-low_dep_keywords = ["Tacama", "4Runner", "Civic", "CR-V", "Wrangler", "911", "RAV4", "Lexus", "Camry", "Corolla"]
+low_dep_keywords = ["Tacoma", "4Runner", "Civic", "CR-V", "Wrangler", "911", "RAV4", "Lexus", "Camry", "Corolla"]
 
 if st.sidebar.button("Calculate"):
     if not all([year, make, model]):
@@ -135,7 +130,6 @@ if st.sidebar.button("Calculate"):
         st.subheader("5-Year Depreciation Forecast")
         st.dataframe(df.style.format({"Value (€)": "€{:.0f}", "Loss (€)": "€{:.0f}"}))
 
-        # Chart
         fig, ax = plt.subplots(figsize=(10, 6))
         ax.plot(df["Year"], df["Value (€)"], marker="o", color="#e74c3c", linewidth=4)
         ax.axhline(y=purchase_price * 0.5, color="orange", linestyle="--", label="50% of Purchase")
@@ -147,7 +141,6 @@ if st.sidebar.button("Calculate"):
         ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"€{x:,.0f}"))
         st.pyplot(fig)
 
-        # Market value impact
         price_diff = purchase_price - fair_market_value
         if price_diff > 500:
             st.error(f"Paying €{price_diff:,.0f} ABOVE market – hits resale hard!")
@@ -156,7 +149,6 @@ if st.sidebar.button("Calculate"):
         else:
             st.info("Near market value")
 
-        # Smart Buy Score
         remaining_pct = values[-1] / purchase_price * 100
         is_low_dep = any(k in f"{make} {model}" for k in low_dep_keywords)
         if remaining_pct > 55 or (is_low_dep and vehicle_type == "Used (2+ years old)"):
@@ -226,4 +218,4 @@ if st.sidebar.button("Calculate"):
             """)
 
 st.markdown("---")
-st.markdown("Deprecia – With Porsche Taycan Sample & Fixed Session State")
+st.markdown("Deprecia – Final Fixed with Safe Session State & Porsche Sample")

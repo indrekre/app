@@ -5,7 +5,7 @@ import requests
 
 st.set_page_config(page_title="Deprecia - Smart Financing", page_icon="🚗")
 st.title("🚗 Deprecia – Smart Car Financing & Depreciation")
-st.markdown("VIN lookup, depreciation forecast, and smarter financing tools.")
+st.markdown("VIN lookup, depreciation forecast, smarter financing + **Smart Buy Score** and tips to avoid loss.")
 
 BASE_URL = "https://vpic.nhtsa.dot.gov/api/vehicles"
 
@@ -63,7 +63,8 @@ year = st.sidebar.selectbox("Year", [decoded["year"]] if decoded and decoded["ye
 purchase_price = st.sidebar.number_input("Purchase Price ($)", 10000, 300000, 45000, 1000)
 annual_miles = st.sidebar.number_input("Annual Miles", value=12000)
 
-low_dep = ["Tacoma", "4Runner", "Civic", "CR-V"]
+# Low-dep keywords for Smart Score
+low_dep_keywords = ["Tacoma", "4Runner", "Civic", "CR-V", "Wrangler", "Porsche 911", "RAV4", "Lexus"]
 
 if st.sidebar.button("Calculate"):
     if not all([year, make, model]):
@@ -85,17 +86,34 @@ if st.sidebar.button("Calculate"):
         years_list = [int(year) + i for i in range(6)]
         df = pd.DataFrame({"Year": years_list, "Value ($)": [round(v) for v in values]})
         df["Loss ($)"] = df["Value ($)"].diff().fillna(0) * -1
-        st.subheader("5-Year Depreciation")
+        st.subheader("5-Year Depreciation Forecast")
         st.dataframe(df.style.format({"Value ($)": "${:,.0f}", "Loss ($)": "${:,.0f}"}))
 
-        fig, ax = plt.subplots(figsize=(10, 5))
-        ax.plot(df["Year"], df["Value ($)"], marker="o", color="#e74c3c", linewidth=3)
-        ax.set_title("Projected Value")
-        ax.grid(True)
+        # Enhanced Depreciation Chart
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.plot(df["Year"], df["Value ($)"], marker="o", color="#e74c3c", linewidth=4, label="Vehicle Value")
+        ax.axhline(y=purchase_price * 0.5, color="orange", linestyle="--", label="50% of Original Value")
+        ax.fill_between(df["Year"], df["Value ($)"], purchase_price, alpha=0.2, color="#e74c3c", label="Total Depreciation")
+        ax.set_title("Depreciation Impact – Sharp Drop in Year 1", fontsize=16)
+        ax.set_ylabel("Value ($)")
+        ax.grid(True, alpha=0.3)
+        ax.legend()
         ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x:,.0f}"))
         st.pyplot(fig)
 
-        monthly = None  # Initialize
+        # Smart Buy Score
+        remaining_pct = values[-1] / purchase_price * 100
+        is_low_dep = any(k in f"{make} {model}" for k in low_dep_keywords)
+        score = "Smart" if remaining_pct > 55 or is_low_dep else "Caution" if remaining_pct > 40 else "High Risk"
+
+        if score == "Smart":
+            st.success(f"🟢 **Smart Buy!** Remaining value ~{remaining_pct:.0f}% after 5 years. This model holds value well.")
+        elif score == "Caution":
+            st.warning(f"🟡 **Caution** – Remaining value ~{remaining_pct:.0f}%. Average depreciation – consider alternatives.")
+        else:
+            st.error(f"🔴 **High Risk** – Remaining value only ~{remaining_pct:.0f}%. Strong depreciation expected.")
+
+        monthly = None
 
         with st.expander("1. Loan Simulator", expanded=True):
             down = st.slider("Down Payment ($)", 0, purchase_price//2, purchase_price//10, 1000)
@@ -128,9 +146,9 @@ if st.sidebar.button("Calculate"):
                 fig2, ax2 = plt.subplots(figsize=(10, 5))
                 ax2.plot(years_list, values, label="Vehicle Value", marker="o", color="#e74c3c")
                 ax2.plot(years_list, balances, label="Loan Balance", marker="s", color="#3498db")
-                ax2.fill_between(years_list, values, balances, where=[b > v for b, v in zip(balances, values)], color="red", alpha=0.3, label="Risk Zone")
+                ax2.fill_between(years_list, values, balances, where=[b > v for b, v in zip(balances, values)], color="red", alpha=0.3, label="Upside-Down Risk")
                 ax2.legend()
-                ax2.set_title("Loan Balance vs Value")
+                ax2.set_title("Loan Balance vs Value – Avoid Being Upside Down")
                 ax2.grid(True)
                 ax2.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x:,.0f}"))
                 st.pyplot(fig2)
@@ -147,18 +165,28 @@ if st.sidebar.button("Calculate"):
             else:
                 st.write("**Buy Monthly:** N/A (run Loan Simulator first)")
 
-        with st.expander("3. Low-Dep Recommender"):
-            current = f"{make} {model}"
-            if any(low in current for low in low_dep):
-                st.success("Great choice – holds value well!")
-            st.write("Top low-dep: Toyota Tacoma/4Runner, Honda Civic/CR-V")
+        with st.expander("3. How to Avoid Depreciation Impact"):
+            st.markdown("""
+            ### Top Ways to Minimize Depreciation Loss
+            - **Buy used (2-5 years old)**: Skip the 20-30% first-year drop
+            - **Choose low-depreciation models**: Toyota Tacoma, 4Runner, Honda Civic/CR-V, Jeep Wrangler
+            - **Keep mileage low**: Under 12,000 miles/year
+            - **Maintain perfectly**: Regular service, clean condition
+            - **Lease high-dep cars** (e.g., luxury/EVs): Pay only for the depreciation you use
+            - **Hold longer**: Keep 10+ years – depreciation hurts less
+            - **Larger down payment**: Reduces upside-down risk in financing
+            """)
+            if score == "High Risk":
+                st.warning("Your selection has high depreciation – strongly consider leasing or a Toyota/Honda alternative.")
+            elif score == "Caution":
+                st.info("Moderate risk – a larger down payment or shorter loan helps.")
+            else:
+                st.success("Excellent choice – you're already minimizing depreciation!")
 
         with st.expander("4. GAP Insurance"):
             if 'down' in locals() and down < purchase_price * 0.20:
-                st.warning("Low down payment – high risk")
+                st.warning("Low down payment – high upside-down risk")
                 st.info("Recommend GAP insurance (~$500–$1000)")
-            else:
-                st.info("Down payment looks good")
 
         with st.expander("5. TCO Dashboard"):
             years = 5
@@ -168,4 +196,4 @@ if st.sidebar.button("Calculate"):
             st.metric("5-Year TCO Estimate", f"${tco:,.0f}")
 
 st.markdown("---")
-st.markdown("Deprecia – Final Working Version | No Errors")
+st.markdown("Deprecia – With Smart Buy Score & Avoidance Tips")

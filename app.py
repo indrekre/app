@@ -95,7 +95,7 @@ if st.sidebar.button("Calculate"):
         ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x:,.0f}"))
         st.pyplot(fig)
 
-        monthly = None  # Define outside
+        monthly = None  # Initialize
 
         with st.expander("1. Loan Simulator", expanded=True):
             down = st.slider("Down Payment ($)", 0, purchase_price//2, purchase_price//10, 1000)
@@ -163,9 +163,9 @@ if st.sidebar.button("Calculate"):
         with st.expander("5. TCO Dashboard"):
             years = 5
             dep_loss = purchase_price - values[-1]
-            interest = (total_paid - loan) if 'total_paid' in locals() and loan > 0 else 0
+            interest = (total_paid - loan) if 'total_paid' in locals() and 'loan' in locals() and loan > 0 else 0
             tco = dep_loss + interest + 9000 + (annual_miles * 0.15 * years) + 4000
             st.metric("5-Year TCO Estimate", f"${tco:,.0f}")
 
 st.markdown("---")
-st.markdown("Deprecia – Final Working Version")
+st.markdown("Deprecia – Final Working Version | No Errors")

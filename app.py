@@ -95,6 +95,8 @@ if st.sidebar.button("Calculate"):
         ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x:,.0f}"))
         st.pyplot(fig)
 
+        monthly = None  # Define outside
+
         with st.expander("1. Loan Simulator", expanded=True):
             down = st.slider("Down Payment ($)", 0, purchase_price//2, purchase_price//10, 1000)
             loan = purchase_price - down
@@ -102,14 +104,12 @@ if st.sidebar.button("Calculate"):
             rate = st.slider("Interest Rate (%)", 4.0, 15.0, 7.0) / 100
 
             if loan > 0 and rate > 0:
-                # Pure Python monthly payment
                 r = rate / 12
                 monthly = loan * r * (1 + r)**term / ((1 + r)**term - 1)
                 total_paid = monthly * term
                 st.write(f"**Monthly Payment:** ${monthly:,.0f}")
                 st.write(f"**Total Interest:** ${total_paid - loan:,.0f}")
 
-                # Yearly balance
                 balance = loan
                 balances = [loan]
                 for _ in range(5):
@@ -142,7 +142,10 @@ if st.sidebar.button("Calculate"):
             dep_lease = purchase_price * (1 - residual/100)
             lease_monthly = (dep_lease / lease_term) + (purchase_price * mf)
             st.write(f"**Lease Monthly:** ${lease_monthly:,.0f}")
-            st.write(f"**Buy Monthly:** ${monthly:,.0f if 'monthly' in locals() else 'N/A'}")
+            if monthly is not None:
+                st.write(f"**Buy Monthly:** ${monthly:,.0f}")
+            else:
+                st.write("**Buy Monthly:** N/A (run Loan Simulator first)")
 
         with st.expander("3. Low-Dep Recommender"):
             current = f"{make} {model}"
@@ -151,16 +154,18 @@ if st.sidebar.button("Calculate"):
             st.write("Top low-dep: Toyota Tacoma/4Runner, Honda Civic/CR-V")
 
         with st.expander("4. GAP Insurance"):
-            if down < purchase_price * 0.20:
+            if 'down' in locals() and down < purchase_price * 0.20:
                 st.warning("Low down payment – high risk")
                 st.info("Recommend GAP insurance (~$500–$1000)")
+            else:
+                st.info("Down payment looks good")
 
         with st.expander("5. TCO Dashboard"):
             years = 5
             dep_loss = purchase_price - values[-1]
-            interest = total_paid - loan if 'total_paid' in locals() and loan > 0 else 0
+            interest = (total_paid - loan) if 'total_paid' in locals() and loan > 0 else 0
             tco = dep_loss + interest + 9000 + (annual_miles * 0.15 * years) + 4000
             st.metric("5-Year TCO Estimate", f"${tco:,.0f}")
 
 st.markdown("---")
-st.markdown("Deprecia – Working Version | No Extra Libraries")
+st.markdown("Deprecia – Final Working Version")

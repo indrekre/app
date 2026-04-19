@@ -1,0 +1,149 @@
+/* ====================================================================
+   GOALZ — Design tokens
+   A football-academy brand book. Dark, editorial, warm, disciplined.
+   ==================================================================== */
+
+:root {
+  /* -------- Palette: Floodlight (default) ------------------------ */
+  --ink-000: #05080B;      /* deep night, between floodlights         */
+  --ink-050: #0B0F14;      /* primary surface                         */
+  --ink-100: #10161D;      /* raised card                             */
+  --ink-200: #1A2129;      /* hairline-adjacent surface               */
+  --ink-300: #242C36;      /* divider / border on dark                */
+  --ink-400: #38424E;      /* muted stroke                            */
+  --ink-500: #566270;      /* muted copy on dark                      */
+  --ink-600: #8C97A4;      /* meta                                    */
+  --ink-700: #B9C1CB;      /* secondary copy                          */
+  --ink-800: #DDE3EA;      /* primary copy on dark                    */
+  --ink-900: #F4F6F8;      /* headlines on dark                       */
+
+  --bone-050: #F7F3ED;     /* light surface (alt mode)                */
+  --bone-100: #ECE5DA;     /* off-white card                          */
+  --bone-200: #D9CFBF;     /* warm divider                            */
+
+  --flame-300: #F3A06A;    /* highlight tint                          */
+  --flame-500: #D65A2B;    /* PRIMARY warm — the jersey               */
+  --flame-600: #B94517;    /* pressed                                 */
+  --flame-700: #8A3010;    /* shadow tint                             */
+
+  --amber-400: #E8B960;    /* floodlight / secondary accent           */
+  --amber-500: #C99340;
+
+  --pitch-500: #3F6B3A;    /* field green — sparingly                 */
+  --pitch-600: #2E5128;
+
+  --crimson-500: #C43A3A;  /* error / red-card                        */
+  --lime-500:    #84C85A;  /* success                                 */
+
+  /* -------- Semantic aliases (what components reference) ---------- */
+  --bg:           var(--ink-050);
+  --bg-elev:      var(--ink-100);
+  --bg-soft:      var(--ink-200);
+  --stroke:       var(--ink-300);
+  --stroke-soft:  color-mix(in oklab, var(--ink-300) 60%, transparent);
+  --text:         var(--ink-900);
+  --text-muted:   var(--ink-700);
+  --text-meta:    var(--ink-600);
+  --accent:       var(--flame-500);
+  --accent-ink:   #fff;
+  --accent-soft:  color-mix(in oklab, var(--flame-500) 18%, var(--ink-100));
+  --warm:         var(--amber-400);
+  --ok:           var(--lime-500);
+  --warn:         var(--amber-500);
+  --err:          var(--crimson-500);
+
+  /* -------- Typography ------------------------------------------- */
+  /* Fraunces-like editorial serif + clean sans. Instrument Serif reads similar;
+     Inter Tight covers ui; Geist Mono for numbers/eyebrows.  */
+  --font-display: "Instrument Serif", "Fraunces", "Source Serif 4", ui-serif, Georgia, serif;
+  --font-sans:    "Inter Tight", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+
+  /* Scale — 1920 flexible. Clamp for responsive comfort. */
+  --t-eyebrow: 11px;        /* uppercase labels, tracking +10%         */
+  --t-micro:   12px;
+  --t-caption: 13px;
+  --t-body:    16px;
+  --t-lead:    18px;
+  --t-h6:      20px;
+  --t-h5:      24px;
+  --t-h4:      32px;
+  --t-h3:      44px;
+  --t-h2:      64px;
+  --t-h1:      96px;
+  --t-display: 148px;       /* hero banner                              */
+
+  --lh-tight:  1.02;
+  --lh-snug:   1.15;
+  --lh-body:   1.5;
+  --lh-relax:  1.7;
+
+  --tr-tight:  -0.02em;
+  --tr-snug:   -0.01em;
+  --tr-wide:   0.02em;
+  --tr-label:  0.12em;
+
+  /* -------- Spacing (4px base) ----------------------------------- */
+  --s-0: 0;
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+  --s-10: 128px;
+
+  /* -------- Radii ------------------------------------------------ */
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+  --r-xl: 32px;
+  --r-pill: 999px;
+
+  /* -------- Shadows (dark-surface friendly) ---------------------- */
+  --sh-1: 0 1px 0 rgba(255,255,255,.03) inset, 0 1px 2px rgba(0,0,0,.35);
+  --sh-2: 0 1px 0 rgba(255,255,255,.04) inset, 0 10px 24px -8px rgba(0,0,0,.6);
+  --sh-3: 0 1px 0 rgba(255,255,255,.05) inset, 0 24px 48px -12px rgba(0,0,0,.7);
+  --sh-glow: 0 0 0 1px color-mix(in oklab, var(--accent) 30%, transparent),
+             0 14px 40px -14px color-mix(in oklab, var(--accent) 55%, transparent);
+
+  /* -------- Motion ---------------------------------------------- */
+  --ease-out:    cubic-bezier(.2, .7, .2, 1);
+  --ease-in-out: cubic-bezier(.5, 0, .2, 1);
+  --ease-snap:   cubic-bezier(.2, .8, .2, 1.02);
+  --d-fast:  160ms;
+  --d-base:  260ms;
+  --d-slow:  520ms;
+
+  /* -------- Page --------------------------------------------- */
+  --content-max: 1200px;
+  --gutter: clamp(16px, 4vw, 48px);
+}
+
+/* ==== Palette variants — swapped by Tweaks ============================ */
+[data-palette="dusk"] {
+  --ink-050: #0E1218;
+  --ink-100: #151A22;
+  --ink-200: #1F2630;
+  --ink-300: #2B333F;
+  --flame-500: #E86A3C;
+  --amber-400: #F1C878;
+  --accent:    var(--flame-500);
+  --accent-soft: color-mix(in oklab, var(--flame-500) 22%, var(--ink-100));
+}
+[data-palette="pitch"] {
+  /* Darker, more green-forward, pitch-first vibe */
+  --ink-050: #07100B;
+  --ink-100: #0C1710;
+  --ink-200: #142018;
+  --ink-300: #1E2C22;
+  --flame-500: #E67A2E;   /* warmer-orange */
+  --amber-400: #E8B960;
+  --pitch-500: #4A8642;
+  --accent:    var(--pitch-500);
+  --accent-soft: color-mix(in oklab, var(--pitch-500) 22%, var(--ink-100));
+}
